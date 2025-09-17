@@ -1,0 +1,121 @@
+# Laravel Package Development
+/vendor/
+/node_modules/
+.env
+.env.backup
+.env.production
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+auth.json
+npm-debug.log
+yarn-error.log
+/.fleet
+/.idea
+/.vscode
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+/build/
+/dist/
+/storage/
+*.log
+
+# Testing
+.phpunit.cache/
+.phpunit.result.cache
+phpunit.xml.bak
+coverage/
+coverage.xml
+*.coverage
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# Documentation
+docs/_build/
+docs/.doctrees/
+
+# IDE specific files
+*.swp
+*.swo
+*~
+.project
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+.phpstorm.meta.php
+_ide_helper.php
+_ide_helper_models.php
+.php_cs.cache
+.php-cs-fixer.cache
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.bak
+*.tmp
+*.temp
+
+# AI Development
+.ai_prompts/
+.cursor/
+.copilot/
+*.ai.md
+ai-notes/
+ai-prompts/
+
+# Composer
+composer.phar
+composer.lock
+# Note: For applications, composer.lock should be committed
+# For libraries/packages like this one, it should be excluded
+
+# Laravel specific
+bootstrap/cache/
+storage/*.key
+public/storage
+public/hot
+public/mix-manifest.json
+
+# Package development specific
+.phpunit.result.cache
+.php_cs.cache
+.php-cs-fixer.cache
+phpstan.cache
+psalm.cache
+infection.log
+testdox.html
+testdox.txt
+
+# Temporary files
+*.cache
+*.pid
+*.seed
+*.pid.lock
+*.log
+logs/
+*.sqlite
+*.sqlite3
+
+# Archives
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Development files
+TODO.md
+NOTES.md
+.todo
+scratch/
+temp/
+tmp/

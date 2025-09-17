@@ -1,0 +1,85 @@
+{
+  "name": "dalehurley/laravel-php-mcp-sdk",
+  "description": "Comprehensive Laravel wrapper for PHP MCP SDK with full MCP 2025-06-18 specification support",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Dale Hurley"
+    }
+  ],
+  "homepage": "https://github.com/dalehurley/laravel-php-mcp-sdk",
+  "keywords": [
+    "laravel",
+    "mcp",
+    "model-context-protocol",
+    "llm",
+    "ai",
+    "multiple-servers",
+    "oauth",
+    "websocket",
+    "stdio",
+    "http"
+  ],
+  "require": {
+    "php": "^8.1",
+    "dalehurley/php-mcp-sdk": "^0.1.7",
+    "illuminate/support": "^10.0|^11.0|^12.0",
+    "illuminate/validation": "^10.0|^11.0|^12.0",
+    "illuminate/cache": "^10.0|^11.0|^12.0",
+    "illuminate/queue": "^10.0|^11.0|^12.0",
+    "illuminate/events": "^10.0|^11.0|^12.0",
+    "illuminate/console": "^10.0|^11.0|^12.0",
+    "illuminate/http": "^10.0|^11.0|^12.0",
+    "illuminate/routing": "^10.0|^11.0|^12.0",
+    "league/oauth2-server": "^8.5"
+  },
+  "require-dev": {
+    "orchestra/testbench": "^8.0|^9.0|^10.0",
+    "phpunit/phpunit": "^10.5",
+    "mockery/mockery": "^1.6",
+    "phpstan/phpstan": "^1.10",
+    "squizlabs/php_codesniffer": "^3.7",
+    "friendsofphp/php-cs-fixer": "^3.48"
+  },
+  "autoload": {
+    "psr-4": {
+      "MCP\\Laravel\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "MCP\\Laravel\\Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "test": "phpunit",
+    "test-coverage": "XDEBUG_MODE=coverage phpunit --coverage-html coverage",
+    "phpstan": "phpstan analyse src tests --level=8",
+    "cs-check": "phpcs",
+    "cs-fix": "php-cs-fixer fix",
+    "check": [
+      "@cs-check",
+      "@phpstan",
+      "@test"
+    ]
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "MCP\\Laravel\\Providers\\McpServiceProvider"
+      ],
+      "aliases": {
+        "Mcp": "MCP\\Laravel\\Facades\\Mcp",
+        "McpServer": "MCP\\Laravel\\Facades\\McpServer",
+        "McpClient": "MCP\\Laravel\\Facades\\McpClient"
+      }
+    }
+  },
+  "config": {
+    "sort-packages": true,
+    "allow-plugins": {
+      "php-http/discovery": true
+    }
+  }
+}
