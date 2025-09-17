@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2025-09-17
+
+### Fixed
+
+- **Client Capabilities Validation** - Fixed MCP validation error where empty experimental and sampling capabilities were being sent as arrays instead of being omitted, causing "Expected object, received array" validation errors when connecting to MCP servers like `mcp.pga.com`
+- **LaravelMcpClient Initialization** - Added `prepareCapability()` method to convert empty capability arrays to `null` during client initialization, preventing JSON serialization of empty arrays that cause server-side validation failures
+
 ## [0.1.0] - 2025-09-17
 
 Initial pre-release of the Laravel PHP MCP SDK, providing a comprehensive Laravel wrapper around the PHP-MCP-SDK with full MCP 2025-06-18 specification support.

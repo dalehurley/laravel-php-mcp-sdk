@@ -42,6 +42,27 @@ class LaravelMcpClient
     }
 
     /**
+     * Prepare a capability value for the MCP client.
+     * Converts empty arrays/objects to null to avoid sending them to the server.
+     */
+    protected function prepareCapability($value): ?array
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        if (is_object($value)) {
+            $value = (array) $value;
+        }
+
+        if (is_array($value) && empty($value)) {
+            return null; // Don't send empty capabilities
+        }
+
+        return is_array($value) ? $value : null;
+    }
+
+    /**
      * Initialize the MCP client instance.
      */
     protected function initializeClient(): void
@@ -52,9 +73,9 @@ class LaravelMcpClient
         );
 
         $capabilities = new ClientCapabilities(
-            experimental: $this->config['capabilities']['experimental'] ?? [],
-            sampling: $this->config['capabilities']['sampling'] ?? [],
-            roots: $this->config['capabilities']['roots'] ?? ['listChanged' => true]
+            experimental: $this->prepareCapability($this->config['capabilities']['experimental'] ?? null),
+            sampling: $this->prepareCapability($this->config['capabilities']['sampling'] ?? null),
+            roots: $this->prepareCapability($this->config['capabilities']['roots'] ?? ['listChanged' => true])
         );
 
         $options = new ClientOptions(
