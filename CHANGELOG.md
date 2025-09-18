@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2] - 2025-09-18
+
+### Fixed
+
+- **UnhandledFutureError Prevention** - Fixed `Amp\Future\UnhandledFutureError` when MCP connections are closed by implementing proper future handling with `safeAwait()` helper method that catches connection closed scenarios and updates client connection status
+- **Connection State Management** - Improved connection state tracking by automatically marking client as disconnected when receiving "Connection closed" errors (-32000), preventing subsequent operations on dead connections
+- **Error Handling Optimization** - Added centralized `handleException()` method to reduce code duplication and ensure consistent error handling across all MCP client operations
+
+### Added
+
+- **Comprehensive Test Coverage** - Added unit and integration tests for connection error handling scenarios to ensure reliability and prevent regressions
+
 ## [0.1.1] - 2025-09-17
 
 ### Fixed

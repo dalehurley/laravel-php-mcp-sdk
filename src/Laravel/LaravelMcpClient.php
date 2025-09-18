@@ -9,6 +9,11 @@ use MCP\Types\Implementation;
 use MCP\Types\Capabilities\ClientCapabilities;
 use MCP\Laravel\Exceptions\McpException;
 use MCP\Laravel\Exceptions\ClientNotConnectedException;
+use Amp\Future\UnhandledFutureError;
+use Amp\Future;
+use function Amp\async;
+use function app;
+use function logger;
 
 /**
  * Laravel wrapper for MCP Client with full specification support.
@@ -204,13 +209,12 @@ class LaravelMcpClient
                 'arguments' => $params
             ]);
             $future = $this->client->callTool($request);
-            $result = $future->await();
+            $result = $this->safeAwait($future);
             $this->requestCount++;
             $this->lastResponseTime = microtime(true) - $startTime;
             return $result;
         } catch (\Exception $e) {
-            $this->errorCount++;
-            throw new McpException("Failed to call tool {$toolName}: " . $e->getMessage(), 0, $e);
+            $this->handleException($e, "call tool {$toolName}");
         }
     }
 
@@ -226,13 +230,12 @@ class LaravelMcpClient
         try {
             $request = new \MCP\Types\Requests\ReadResourceRequest($uri);
             $future = $this->client->readResource($request);
-            $result = $future->await();
+            $result = $this->safeAwait($future);
             $this->requestCount++;
             $this->lastResponseTime = microtime(true) - $startTime;
             return $result;
         } catch (\Exception $e) {
-            $this->errorCount++;
-            throw new McpException("Failed to read resource {$uri}: " . $e->getMessage(), 0, $e);
+            $this->handleException($e, "read resource {$uri}");
         }
     }
 
@@ -248,13 +251,12 @@ class LaravelMcpClient
         try {
             $request = new \MCP\Types\Requests\GetPromptRequest($promptName, $args);
             $future = $this->client->getPrompt($request);
-            $result = $future->await();
+            $result = $this->safeAwait($future);
             $this->requestCount++;
             $this->lastResponseTime = microtime(true) - $startTime;
             return $result;
         } catch (\Exception $e) {
-            $this->errorCount++;
-            throw new McpException("Failed to get prompt {$promptName}: " . $e->getMessage(), 0, $e);
+            $this->handleException($e, "get prompt {$promptName}");
         }
     }
 
@@ -268,12 +270,11 @@ class LaravelMcpClient
         try {
             $request = new \MCP\Types\Requests\ListToolsRequest();
             $future = $this->client->listTools($request);
-            $result = $future->await();
+            $result = $this->safeAwait($future);
             $this->requestCount++;
             return $result->getTools();
         } catch (\Exception $e) {
-            $this->errorCount++;
-            throw new McpException("Failed to list tools: " . $e->getMessage(), 0, $e);
+            $this->handleException($e, 'list tools');
         }
     }
 
@@ -287,12 +288,11 @@ class LaravelMcpClient
         try {
             $request = new \MCP\Types\Requests\ListResourcesRequest();
             $future = $this->client->listResources($request);
-            $result = $future->await();
+            $result = $this->safeAwait($future);
             $this->requestCount++;
             return $result->getResources();
         } catch (\Exception $e) {
-            $this->errorCount++;
-            throw new McpException("Failed to list resources: " . $e->getMessage(), 0, $e);
+            $this->handleException($e, 'list resources');
         }
     }
 
@@ -306,12 +306,11 @@ class LaravelMcpClient
         try {
             $request = new \MCP\Types\Requests\ListPromptsRequest();
             $future = $this->client->listPrompts($request);
-            $result = $future->await();
+            $result = $this->safeAwait($future);
             $this->requestCount++;
             return $result->getPrompts();
         } catch (\Exception $e) {
-            $this->errorCount++;
-            throw new McpException("Failed to list prompts: " . $e->getMessage(), 0, $e);
+            $this->handleException($e, 'list prompts');
         }
     }
 
@@ -415,12 +414,11 @@ class LaravelMcpClient
 
         try {
             $future = $this->client->ping();
-            $future->await();
+            $this->safeAwait($future);
             $this->lastPing = new \DateTime();
             $this->requestCount++;
         } catch (\Exception $e) {
-            $this->errorCount++;
-            throw new McpException("Failed to ping server: " . $e->getMessage(), 0, $e);
+            $this->handleException($e, 'ping server');
         }
     }
 
@@ -437,12 +435,11 @@ class LaravelMcpClient
                 argument: ['name' => 'text', 'value' => $text]
             );
             $future = $this->client->complete($request);
-            $result = $future->await();
+            $result = $this->safeAwait($future);
             $this->requestCount++;
             return $result;
         } catch (\Exception $e) {
-            $this->errorCount++;
-            throw new McpException("Failed to complete text: " . $e->getMessage(), 0, $e);
+            $this->handleException($e, 'complete text');
         }
     }
 
@@ -545,6 +542,45 @@ class LaravelMcpClient
         if (!$this->connected) {
             throw new ClientNotConnectedException("Client {$this->name} is not connected to any server");
         }
+    }
+
+    /**
+     * Safely await a future with proper connection error handling.
+     * 
+     * This method handles UnhandledFutureError exceptions that occur when
+     * connections are closed and automatically updates the connection status.
+     */
+    protected function safeAwait(Future $future): mixed
+    {
+        try {
+            return $future->await();
+        } catch (UnhandledFutureError $e) {
+            if (str_contains($e->getMessage(), 'Connection closed')) {
+                $this->connected = false;
+            }
+            throw new McpException("Connection error: " . $e->getMessage(), 0, $e);
+        }
+    }
+
+    /**
+     * Handle exceptions and update connection status if needed.
+     * 
+     * @throws McpException
+     * @return never
+     */
+    protected function handleException(\Exception $e, string $operation): never
+    {
+        $this->errorCount++;
+
+        // Check for connection errors and update status
+        if (
+            str_contains($e->getMessage(), 'Connection closed') ||
+            str_contains($e->getMessage(), 'MCP error -32000')
+        ) {
+            $this->connected = false;
+        }
+
+        throw new McpException("Failed to {$operation}: " . $e->getMessage(), 0, $e);
     }
 
     /**
