@@ -7,12 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3] - 2025-09-25
+
 ### Dependencies
 
 - **Upstream PHP-MCP-SDK Fix**: Updated to include fix for unhandled future errors in StreamableHttpClientTransport that was causing "UnhandledFutureError" exceptions with invalid sessions
   - The underlying PHP-MCP-SDK now properly handles all async operations in the HTTP transport
   - Fixes issues when HTTP 400 "missing or invalid session" errors occurred
-  - Requires PHP-MCP-SDK version that includes the StreamableHttpClientTransport future handling fix
+  - Requires PHP-MCP-SDK version that includes the StreamableHttpClientTransport future handling fix (v0.1.8+)
 
 ## [0.1.2] - 2025-09-18
 
