@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.4] - 2025-10-07
+
+### Fixed
+
+- **STDIO Transport Connection Handling** - Fixed race condition where STDIO transport connections were not being awaited, causing the client to report as connected before the connection was fully established
+- **Connection Verification** - Added proper connection verification by fetching server capabilities before marking client as connected, ensuring the connection is fully functional before use
+- **Improved Error Messages** - Enhanced connection error messages to provide clearer guidance when connection fails, including capability fetch failures
+
+### Changed
+
+- **listRootContents Method** - Fixed `listRootContents()` to properly await the future and return array instead of Future object
+- **completeText Method** - Fixed CompleteRequest construction to use array parameters instead of named arguments
+
+### Added
+
+- **Comprehensive Troubleshooting Guide** - Added detailed troubleshooting documentation in `docs/TROUBLESHOOTING.md` with solutions for common connection issues, best practices, and debugging tips
+
 ## [0.1.3] - 2025-09-25
 
 ### Dependencies

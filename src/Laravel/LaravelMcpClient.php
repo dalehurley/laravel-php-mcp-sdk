@@ -128,14 +128,17 @@ class LaravelMcpClient
                     throw new McpException("Unsupported transport: {$this->transport}");
             }
 
+            // Verify connection was established by fetching server capabilities
+            // This serves as a connection handshake verification
+            $this->fetchServerCapabilities();
+
+            // Only set connected status after successful capability fetch
             $this->connected = true;
             $this->connectedAt = new \DateTime();
             $this->lastResponseTime = microtime(true) - $startTime;
-
-            // Get server capabilities after connection
-            $this->fetchServerCapabilities();
         } catch (\Exception $e) {
             $this->errorCount++;
+            $this->connected = false;
             throw new McpException("Failed to connect to MCP server: " . $e->getMessage(), 0, $e);
         }
     }
@@ -342,9 +345,11 @@ class LaravelMcpClient
 
         try {
             // Use the appropriate MCP client method for listing root contents
-            $result = $this->client->listResources();
+            $request = new \MCP\Types\Requests\ListResourcesRequest();
+            $future = $this->client->listResources($request);
+            $result = $this->safeAwait($future);
             $this->requestCount++;
-            return $result;
+            return $result->getResources();
         } catch (\Exception $e) {
             $this->errorCount++;
             throw new McpException("Failed to list root contents for {$uri}: " . $e->getMessage(), 0, $e);
@@ -430,10 +435,10 @@ class LaravelMcpClient
         $this->ensureConnected();
 
         try {
-            $request = new \MCP\Types\Requests\CompleteRequest(
-                ref: ['type' => 'ref', 'name' => 'completion'],
-                argument: ['name' => 'text', 'value' => $text]
-            );
+            $request = new \MCP\Types\Requests\CompleteRequest([
+                'ref' => ['type' => 'ref', 'name' => 'completion'],
+                'argument' => ['name' => 'text', 'value' => $text]
+            ]);
             $future = $this->client->complete($request);
             $result = $this->safeAwait($future);
             $this->requestCount++;
@@ -613,10 +618,10 @@ class LaravelMcpClient
 
         $transport = new \MCP\Client\Transport\StdioClientTransport($serverParams);
 
-        // Connect the client to the transport
+        // Connect the client to the transport with await
         \Amp\async(function () use ($transport) {
             $this->client->connect($transport);
-        });
+        })->await();
     }
 
     /**
@@ -655,15 +660,26 @@ class LaravelMcpClient
 
     /**
      * Fetch server capabilities after connection.
+     * 
+     * @param bool $throwOnError Whether to throw an exception on error (default: true for initial connection)
+     * @throws McpException if fetching capabilities fails and $throwOnError is true
      */
-    protected function fetchServerCapabilities(): void
+    protected function fetchServerCapabilities(bool $throwOnError = true): void
     {
         try {
             // Fetch the server's capabilities during the initialization handshake
             $serverCapabilities = $this->client->getServerCapabilities();
             $this->serverCapabilities = $serverCapabilities ? $serverCapabilities->jsonSerialize() : [];
         } catch (\Exception $e) {
-            // Log warning but don't fail the connection
+            if ($throwOnError) {
+                throw new McpException(
+                    "Failed to verify connection by fetching server capabilities: " . $e->getMessage(),
+                    0,
+                    $e
+                );
+            }
+
+            // Log warning but don't fail if not during initial connection
             logger()->warning("Failed to fetch server capabilities: " . $e->getMessage());
             $this->serverCapabilities = [];
         }
