@@ -413,4 +413,26 @@ return [
         'broadcast' => env('MCP_EVENTS_BROADCAST', false),
         'broadcast_channel' => env('MCP_EVENTS_BROADCAST_CHANNEL', 'mcp'),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | UI Resources Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configure MCP-UI support for interactive HTML widgets in tool responses.
+    | This enables tools to return rich UI elements that compatible hosts
+    | (Goose, LibreChat, etc.) can render in sandboxed iframes.
+    |
+    */
+
+    'ui' => [
+        'enabled' => env('MCP_UI_ENABLED', true),
+        'action_endpoint' => env('MCP_UI_ACTION_ENDPOINT', '/mcp/ui-action'),
+        'default_sandbox' => env('MCP_UI_SANDBOX', 'allow-scripts allow-forms'),
+        'default_height' => env('MCP_UI_HEIGHT', '400px'),
+        'default_width' => env('MCP_UI_WIDTH', '100%'),
+        'default_server' => env('MCP_UI_DEFAULT_SERVER', null), // null = use default server
+        'action_middleware' => ['api', 'throttle:60,1'],
+        'debug' => env('MCP_UI_DEBUG', false),
+    ],
 ];

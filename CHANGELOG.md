@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.5] - 2025-11-25
+
+### Added
+
+- **Full MCP-UI Integration** - Complete support for MCP-UI interactive HTML widgets in tool responses
+  - Added UI helper methods to `LaravelTool` base class:
+    - `uiCard()` - Create card widgets with optional actions
+    - `uiTable()` - Create data tables with headers and rows
+    - `uiStats()` - Create stats dashboard widgets
+    - `uiForm()` - Create interactive forms with fields
+    - `uiHtml()` - Create raw HTML UI resources
+    - `uiView()` - Create UI resources from Blade views
+    - `uiUrl()` - Create URL-based UI resources
+    - `uiRemoteDom()` - Create remote DOM UI resources
+    - `withUi()` - Combine text content with UI resources
+    - `uiActionScript()` - Include action handler JavaScript
+  - Added `ui` configuration section to `config/mcp.php` with customizable defaults for sandboxing, dimensions, and action endpoint
+  - Added `UiActionReceived` event for handling widget actions with type-specific getters
+  - Added `McpUiActionController` for handling UI widget actions (tool calls, notifications, prompts, links)
+  - Added UI action route at `/mcp/ui-action` endpoint
+  - Added Blade components for rendering UI widgets:
+    - `<x-mcp-ui-resource>` - Render a single UI resource as sandboxed iframe
+    - `<x-mcp-ui-grid>` - Render multiple UI resources in responsive grid
+    - `<x-mcp-ui-styles>` - Include default CSS styles
+    - `<x-mcp-ui-scripts>` - Include action handler JavaScript with CSRF support
+  - Updated `McpServiceProvider` to register Blade components and publish views
+  - Added comprehensive tests for controller, events, and LaravelTool UI methods
+
+### Changed
+
+- Updated `dalehurley/php-mcp-sdk` dependency to `^0.1.10` for latest test coverage improvements
+
 ## [0.1.4] - 2025-10-07
 
 ### Fixed

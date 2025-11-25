@@ -6,6 +6,8 @@ use MCP\Laravel\Contracts\McpToolInterface;
 use MCP\Types\Content\TextContent;
 use MCP\Types\Content\ImageContent;
 use MCP\Types\Content\EmbeddedResource;
+use MCP\UI\UIResource;
+use MCP\UI\UITemplate;
 
 /**
  * Base class for Laravel MCP tools.
@@ -280,6 +282,142 @@ abstract class LaravelTool implements McpToolInterface
         if (function_exists('event')) {
             event($event, $payload);
         }
+    }
+
+    // =========================================================================
+    // UI Resource Helpers (MCP-UI Integration)
+    // =========================================================================
+
+    /**
+     * Create a UI card widget.
+     *
+     * @param array{title?: string, content?: string, footer?: string, actions?: array<array{label: string, action: string, data?: array}>} $options
+     */
+    protected function uiCard(array $options): array
+    {
+        return UITemplate::card($options);
+    }
+
+    /**
+     * Create a UI table widget.
+     *
+     * @param string $title Table title
+     * @param array<string> $headers Column headers
+     * @param array<array<string|int|float>> $rows Table rows
+     * @param array{actions?: array<array{label: string, action: string}>} $options Additional options
+     */
+    protected function uiTable(string $title, array $headers, array $rows, array $options = []): array
+    {
+        return UITemplate::table($title, $headers, $rows, $options);
+    }
+
+    /**
+     * Create a UI stats dashboard widget.
+     *
+     * @param array<array{label: string, value: string|int|float, icon?: string, change?: string}> $stats
+     * @param array{title?: string, actions?: array} $options
+     */
+    protected function uiStats(array $stats, array $options = []): array
+    {
+        return UITemplate::stats($stats, $options);
+    }
+
+    /**
+     * Create a UI form widget.
+     *
+     * @param array<array{name: string, type: string, label?: string, value?: mixed, options?: array}> $fields
+     * @param array{title?: string, submitLabel?: string, submitAction?: string, method?: string} $options
+     */
+    protected function uiForm(array $fields, array $options = []): array
+    {
+        return UITemplate::form($fields, $options);
+    }
+
+    /**
+     * Create a raw HTML UI resource.
+     *
+     * @param string $uri Unique identifier for the resource
+     * @param string $html HTML content
+     */
+    protected function uiHtml(string $uri, string $html): array
+    {
+        return UIResource::html($uri, $html);
+    }
+
+    /**
+     * Create a UI resource from a Blade view.
+     *
+     * This is a Laravel-specific helper that renders a Blade view
+     * and wraps it in a UI resource.
+     *
+     * @param string $view View name (e.g., 'mcp.widgets.weather')
+     * @param array<string, mixed> $data Data to pass to the view
+     * @param string|null $uri Custom URI (auto-generated if null)
+     */
+    protected function uiView(string $view, array $data = [], ?string $uri = null): array
+    {
+        $html = view($view, $data)->render();
+        $uri = $uri ?? 'ui://view/' . str_replace('.', '/', $view) . '/' . md5(serialize($data));
+
+        return UIResource::html($uri, $html);
+    }
+
+    /**
+     * Combine text content with one or more UI resources.
+     *
+     * @param string $text Text message to include
+     * @param array ...$uiResources UI resources created by ui* methods
+     */
+    protected function withUi(string $text, array ...$uiResources): array
+    {
+        $content = [
+            [
+                'type' => 'text',
+                'text' => $text,
+            ],
+        ];
+
+        foreach ($uiResources as $resource) {
+            $content[] = $resource;
+        }
+
+        return ['content' => $content];
+    }
+
+    /**
+     * Create a URL-based UI resource.
+     *
+     * @param string $uri Unique identifier
+     * @param string $url URL to load in the iframe
+     */
+    protected function uiUrl(string $uri, string $url): array
+    {
+        return UIResource::url($uri, $url);
+    }
+
+    /**
+     * Create a remote DOM UI resource.
+     *
+     * @param string $uri Unique identifier
+     * @param string $url URL that returns DOM updates
+     */
+    protected function uiRemoteDom(string $uri, string $url): array
+    {
+        return UIResource::remoteDom($uri, $url);
+    }
+
+    /**
+     * Include the action handler JavaScript in a UI resource.
+     *
+     * This JavaScript enables widgets to communicate back to the server
+     * through postMessage API calls.
+     *
+     * @param string $action Default action name
+     * @param array<string, mixed> $defaultData Default data to include with actions
+     */
+    protected function uiActionScript(string $action = 'tool', array $defaultData = []): string
+    {
+        return UIResource::actionScript($action, $defaultData);
     }
 
     /**

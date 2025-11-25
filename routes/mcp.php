@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use MCP\Laravel\Http\Controllers\McpController;
+use MCP\Laravel\Http\Controllers\McpUiActionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -74,6 +75,19 @@ Route::prefix($prefix)->middleware(['api'])->group(function () {
         $manager = app(\MCP\Laravel\Laravel\McpManager::class);
         return response()->json($manager->getSystemStatus());
     })->name('mcp.status');
+});
+
+// MCP-UI action endpoint
+// Handles widget actions (tool calls, notifications, prompts, links)
+Route::prefix($prefix)->group(function () {
+    $uiEnabled = config('mcp.ui.enabled', true);
+    $uiMiddleware = config('mcp.ui.action_middleware', ['api', 'throttle:60,1']);
+
+    if ($uiEnabled) {
+        Route::post('/ui-action', [McpUiActionController::class, 'handle'])
+            ->middleware($uiMiddleware)
+            ->name('mcp.ui.action');
+    }
 });
 
 // CORS preflight handling for all MCP routes

@@ -4,6 +4,7 @@ namespace MCP\Laravel\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Blade;
 use MCP\Laravel\Laravel\McpManager;
 use MCP\Laravel\Laravel\ServerManager;
 use MCP\Laravel\Laravel\ClientManager;
@@ -94,6 +95,8 @@ class McpServiceProvider extends ServiceProvider
         $this->registerMiddleware();
         $this->initializeLogging();
         $this->registerEventListeners();
+        $this->registerBladeComponents();
+        $this->loadViews();
     }
 
     /**
@@ -149,6 +152,13 @@ class McpServiceProvider extends ServiceProvider
                 __DIR__ . '/../../resources/stubs' => resource_path('stubs/mcp'),
             ], 'mcp-stubs');
         }
+
+        // Publish MCP-UI views
+        if (file_exists(__DIR__ . '/../../resources/views')) {
+            $this->publishes([
+                __DIR__ . '/../../resources/views' => resource_path('views/vendor/mcp'),
+            ], 'mcp-views');
+        }
     }
 
     /**
@@ -172,6 +182,7 @@ class McpServiceProvider extends ServiceProvider
     {
         $servers = config('mcp.servers', []);
         $hasHttpServer = false;
+        $uiEnabled = config('mcp.ui.enabled', true);
 
         foreach ($servers as $name => $config) {
             if (($config['transport'] ?? 'stdio') === 'http') {
@@ -180,7 +191,8 @@ class McpServiceProvider extends ServiceProvider
             }
         }
 
-        if ($hasHttpServer && file_exists(__DIR__ . '/../../routes/mcp.php')) {
+        // Load routes if we have HTTP servers or UI is enabled (for the action endpoint)
+        if (($hasHttpServer || $uiEnabled) && file_exists(__DIR__ . '/../../routes/mcp.php')) {
             $this->loadRoutesFrom(__DIR__ . '/../../routes/mcp.php');
         }
     }
@@ -243,6 +255,41 @@ class McpServiceProvider extends ServiceProvider
 
         // Register event listeners here
         // This will be expanded when we create the event classes
+    }
+
+    /**
+     * Register MCP-UI Blade components.
+     */
+    protected function registerBladeComponents(): void
+    {
+        if (!config('mcp.ui.enabled', true)) {
+            return;
+        }
+
+        // Register anonymous Blade components with the 'mcp' prefix
+        // Usage: <x-mcp-ui-resource />, <x-mcp-ui-grid />, etc.
+        Blade::anonymousComponentPath(
+            __DIR__ . '/../../resources/views/components',
+            'mcp'
+        );
+
+        // Register component aliases for convenience
+        Blade::component('mcp-ui-resource', 'mcp::mcp-ui-resource');
+        Blade::component('mcp-ui-grid', 'mcp::mcp-ui-grid');
+        Blade::component('mcp-ui-styles', 'mcp::mcp-ui-styles');
+        Blade::component('mcp-ui-scripts', 'mcp::mcp-ui-scripts');
+    }
+
+    /**
+     * Load package views.
+     */
+    protected function loadViews(): void
+    {
+        $viewPath = __DIR__ . '/../../resources/views';
+
+        if (file_exists($viewPath)) {
+            $this->loadViewsFrom($viewPath, 'mcp');
+        }
     }
 
     /**
