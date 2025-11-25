@@ -39,6 +39,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated `dalehurley/php-mcp-sdk` dependency to `^0.1.10` for latest test coverage improvements
 
+### Added
+
+- **Production install optimization**: Added `.gitattributes` file to exclude development files from Composer installs (docs, tests, coverage, config files)
+
 ## [0.1.4] - 2025-10-07
 
 ### Fixed

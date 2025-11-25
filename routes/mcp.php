@@ -79,15 +79,13 @@ Route::prefix($prefix)->middleware(['api'])->group(function () {
 
 // MCP-UI action endpoint
 // Handles widget actions (tool calls, notifications, prompts, links)
+// Note: Service provider checks mcp.ui.enabled before loading routes
 Route::prefix($prefix)->group(function () {
-    $uiEnabled = config('mcp.ui.enabled', true);
     $uiMiddleware = config('mcp.ui.action_middleware', ['api', 'throttle:60,1']);
 
-    if ($uiEnabled) {
-        Route::post('/ui-action', [McpUiActionController::class, 'handle'])
-            ->middleware($uiMiddleware)
-            ->name('mcp.ui.action');
-    }
+    Route::post('/ui-action', [McpUiActionController::class, 'handle'])
+        ->middleware($uiMiddleware)
+        ->name('mcp.ui.action');
 });
 
 // CORS preflight handling for all MCP routes

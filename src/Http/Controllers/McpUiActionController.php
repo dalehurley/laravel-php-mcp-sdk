@@ -18,9 +18,9 @@ use MCP\Laravel\Exceptions\McpException;
  */
 class McpUiActionController extends Controller
 {
-    protected ServerManager $serverManager;
+    protected ?ServerManager $serverManager;
 
-    public function __construct(ServerManager $serverManager)
+    public function __construct(?ServerManager $serverManager = null)
     {
         $this->serverManager = $serverManager;
     }
@@ -91,13 +91,16 @@ class McpUiActionController extends Controller
         $toolName = $payload['name'];
         $arguments = $payload['arguments'] ?? [];
 
+        // Resolve ServerManager if not injected
+        $serverManager = $this->serverManager ?? app(ServerManager::class);
+
         try {
             // Check if server exists
-            if (!$this->serverManager->exists($serverName)) {
+            if (!$serverManager->exists($serverName)) {
                 return $this->errorResponse("Server '{$serverName}' not found", 404);
             }
 
-            $mcpServer = $this->serverManager->get($serverName);
+            $mcpServer = $serverManager->get($serverName);
             $tools = $mcpServer->getTools();
 
             // Check if tool exists
@@ -168,13 +171,16 @@ class McpUiActionController extends Controller
         $promptName = $payload['name'];
         $arguments = $payload['arguments'] ?? [];
 
+        // Resolve ServerManager if not injected
+        $serverManager = $this->serverManager ?? app(ServerManager::class);
+
         try {
             // Check if server exists
-            if (!$this->serverManager->exists($serverName)) {
+            if (!$serverManager->exists($serverName)) {
                 return $this->errorResponse("Server '{$serverName}' not found", 404);
             }
 
-            $mcpServer = $this->serverManager->get($serverName);
+            $mcpServer = $serverManager->get($serverName);
             $prompts = $mcpServer->getPrompts();
 
             // Check if prompt exists

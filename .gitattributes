@@ -1,0 +1,30 @@
+# Auto-detect text files and normalize line endings
+* text=auto
+
+# Exclude files from export (composer install --prefer-dist)
+/.github export-ignore
+/docs export-ignore
+/tests export-ignore
+/.testing export-ignore
+/coverage export-ignore
+/.gitattributes export-ignore
+/.gitignore export-ignore
+/.editorconfig export-ignore
+/.php-cs-fixer.dist.php export-ignore
+/phpunit.xml export-ignore
+/phpunit.xml.dist export-ignore
+/phpstan.neon export-ignore
+/phpstan.neon.dist export-ignore
+/psalm.xml.dist export-ignore
+/phpcs.xml export-ignore
+/testbench.yaml export-ignore
+/CHANGELOG.md export-ignore
+/CONTRIBUTING.md export-ignore
+
+# Mark certain files as binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+
